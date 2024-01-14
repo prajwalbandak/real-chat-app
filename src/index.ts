@@ -1,6 +1,11 @@
 //var WebSocketServer = require('websocket').server;
-import { server as WebSocketServer } from 'websocket';
-import http  from "http"
+import { server as WebSocketServer, connection } from 'websocket';
+import http from "http"
+import { UserManager } from './UserManager';
+import { Store } from './Store/Store';
+import { InMemoryStore } from './Store/InMemoryStore';
+import { IncomingMessage, SupportedMessage } from './Store/messages';
+
 
 var server = http.createServer(function(request: any, response: any) {
     console.log((new Date()) + ' Received request for ' + request.url);
@@ -11,7 +16,10 @@ server.listen(8080, function() {
     console.log((new Date()) + ' Server is listening on port 8080');
 });
 
-const wsServer = new WebSocketServer({
+const userManager = new UserManager();
+const store = new InMemoryStore();
+
+const wsServer = new WebSocketServer({ 
     httpServer: server,
     // You should not use autoAcceptConnections for production
     // applications, as it defeats all standard cross-origin protection
@@ -37,16 +45,44 @@ function originIsAllowed(origin : any) {
       var connection = request.accept('echo-protocol', request.origin);
       console.log((new Date()) + ' Connection accepted.');
       connection.on('message', function(message : any) {
-          if (message.type === 'utf8') {
-              console.log('Received Message: ' + message.utf8Data);
-              connection.sendUTF(message.utf8Data);
-          }
-          else if (message.type === 'binary') {
-              console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-              connection.sendBytes(message.binaryData);
-          }
+            
+            if(message.type === 'utf8'){
+                try{
+
+                    messageHandler(connection , JSON.parse(message.utf8Data))
+
+                }catch(e){
+
+                }
+            }
+
       });
       connection.on('close', function(reasonCode : any, description : any) {
           console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
       });
   });
+
+  function messageHandler(ws:connection, message: IncomingMessage){
+        if(message.type == SupportedMessage.JoinRoom){
+            const payload = message.payload;
+        userManager.addUser(payload.name, payload.userId,payload.roomId,  ws);
+        }
+        if(message.type == SupportedMessage.sendMessage){
+            const payload = message.payload;
+            const user = userManager.getUser(payload.roomId, payload.userId);
+            if(!user){
+                console.log("user not found");
+                return ;
+
+            }
+            store.addChat(payload.userId, user.name, payload.roomId, payload.message)
+        }
+
+        if(message.type == SupportedMessage.UpvoteMessage){
+            const payload = message.payload;
+           
+            store.upvote(payload.userId,  payload.roomId, payload.chatId)
+        }
+        
+  }
+

@@ -7,12 +7,25 @@ export enum SupportedMessage {
     UpvoteMessage = "UPVOTE_MESSAGE"
 }
 
+ export type IncomingMessage = {
+    type:SupportedMessage.JoinRoom,
+    payload:InitMessageType
+} | {
+    type:SupportedMessage.sendMessage,
+    payload:UserMessageType
+} | {
+    type:SupportedMessage.UpvoteMessage,
+    payload:UpvoteMessageType
+}
+
+
 
 export const InitMessage = z.object({
     name:z.string(),
     userId:z.string(),
     roomId:z.string(),
 })
+
 
 
 export type InitMessageType = z.infer<typeof InitMessage>
