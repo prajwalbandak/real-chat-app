@@ -4,7 +4,7 @@ import http from "http"
 import { UserManager } from './UserManager';
 import { Store } from './Store/Store';
 import { InMemoryStore } from './Store/InMemoryStore';
-import { IncomingMessage, SupportedMessage } from './Store/messages';
+import { IncomingMessage, SupportedMessage } from './messages/incomingMessages';
 
 
 var server = http.createServer(function(request: any, response: any) {
