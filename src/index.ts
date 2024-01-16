@@ -5,7 +5,7 @@ import { UserManager } from './UserManager';
 import { Store } from './Store/Store';
 import { InMemoryStore } from './Store/InMemoryStore';
 import { IncomingMessage, SupportedMessage } from './messages/incomingMessages';
-
+import { OutgoingMessage, SupportedMessage as OutgoingSupportedMessages } from './messages/outgoingMessages';
 
 var server = http.createServer(function(request: any, response: any) {
     console.log((new Date()) + ' Received request for ' + request.url);
@@ -26,7 +26,7 @@ const wsServer = new WebSocketServer({
     // facilities built into the protocol and the browser.  You should
     // *always* verify the connection's origin and decide whether or not
     // to accept it.
-    autoAcceptConnections: false
+    autoAcceptConnections: true
 });
 
 function originIsAllowed(origin : any) {
@@ -75,13 +75,44 @@ function originIsAllowed(origin : any) {
                 return ;
 
             }
-            store.addChat(payload.userId, user.name, payload.roomId, payload.message)
+          let chat =   store.addChat(payload.userId, user.name, payload.roomId, payload.message);
+          console.log("chat " + JSON.stringify(chat));
+          if (!chat) {
+            return;
+        }
+          const outgoingPayload : OutgoingMessage =  {
+                type:OutgoingSupportedMessages.AddChat,
+                payload:{
+                    chatId:chat?.id || "",
+                    roomId:payload.roomId,
+                    message:payload.message,
+                    name:user.name,
+                    upvotes:0
+
+                }
+            }
+            userManager.broadcast(payload.roomId, payload.userId, outgoingPayload);
         }
 
         if(message.type == SupportedMessage.UpvoteMessage){
             const payload = message.payload;
            
-            store.upvote(payload.userId,  payload.roomId, payload.chatId)
+            const chat = store.upvote(payload.userId,  payload.roomId, payload.chatId);
+            if(!chat){
+                return;
+            }
+            console.log("INSIDE UPVOTE");
+
+            const outgoingPayload: OutgoingMessage = {
+                type:OutgoingSupportedMessages.UpdateChat,
+                payload:{
+                    chatId:payload.chatId,
+                    roomId:payload.roomId,
+                    upvotes:chat.upvotes.length
+                }
+            }
+            console.log("INSIDE UPVOTZE 3")
+            userManager.broadcast(payload.roomId, payload.userId, outgoingPayload);
         }
         
   }
