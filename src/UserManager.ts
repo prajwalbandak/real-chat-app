@@ -45,13 +45,19 @@ export class UserManager {
         return user ?? null;
     }
     broadcast(roomId:string, userId:string, message:OutgoingMessage){
-
+        console.log("the details ");
         const user = this.getUser(roomId, userId);
+      //  console.log("user details " + JSON.stringify(user));
         if(!user){
             console.log("User not found");
             return;
         }
+        console.log("romm id " + JSON.stringify(roomId));
+
+        
         const room = this.rooms.get(roomId);
+        
+        console.log("room details " + JSON.stringify(room));
         if(!room){
             console.log("Room not found");
             return;

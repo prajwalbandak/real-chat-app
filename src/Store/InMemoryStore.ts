@@ -68,4 +68,13 @@ export class InMemoryStore implements Store{
         }
         return chat;
     }
+    //The upvote method takes three arguments: userId, roomId, and chatId. 
+    //It first gets the room with the given roomId from the store.
+    // If the room is not found, it returns. Next, 
+    //it finds the chat with the given chatId in the room's chats list. 
+    //If the chat is not found, it returns. 
+    //Then, it checks if the user has already upvoted the chat. 
+    //If the user has already upvoted the chat, it returns the chat without modifying it.
+    // If the user has not already upvoted the chat, it adds the user's id to the chat's upvotes list and 
+    //returns the updated chat.
 }

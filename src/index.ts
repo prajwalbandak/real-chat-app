@@ -26,15 +26,18 @@ const wsServer = new WebSocketServer({
     // facilities built into the protocol and the browser.  You should
     // *always* verify the connection's origin and decide whether or not
     // to accept it.
-    autoAcceptConnections: true
+    autoAcceptConnections: false
 });
 
 function originIsAllowed(origin : any) {
+    
     // put logic here to detect whether the specified origin is allowed.
     return true;
   }
   
   wsServer.on('request', function(request : any) {
+    console.log("tiinside the request");
+    
       if (!originIsAllowed(request.origin)) {
         // Make sure we only accept requests from an allowed origin
         request.reject();
@@ -45,7 +48,7 @@ function originIsAllowed(origin : any) {
       var connection = request.accept('echo-protocol', request.origin);
       console.log((new Date()) + ' Connection accepted.');
       connection.on('message', function(message : any) {
-            
+        
             if(message.type === 'utf8'){
                 try{
 
@@ -63,11 +66,14 @@ function originIsAllowed(origin : any) {
   });
 
   function messageHandler(ws:connection, message: IncomingMessage){
+
         if(message.type == SupportedMessage.JoinRoom){
+            console.log("message types")
             const payload = message.payload;
         userManager.addUser(payload.name, payload.userId,payload.roomId,  ws);
         }
         if(message.type == SupportedMessage.sendMessage){
+            console.log("first")
             const payload = message.payload;
             const user = userManager.getUser(payload.roomId, payload.userId);
             if(!user){
@@ -75,11 +81,13 @@ function originIsAllowed(origin : any) {
                 return ;
 
             }
+            console.log("second")
           let chat =   store.addChat(payload.userId, user.name, payload.roomId, payload.message);
           console.log("chat " + JSON.stringify(chat));
           if (!chat) {
             return;
         }
+        console.log("third")
           const outgoingPayload : OutgoingMessage =  {
                 type:OutgoingSupportedMessages.AddChat,
                 payload:{
@@ -91,6 +99,8 @@ function originIsAllowed(origin : any) {
 
                 }
             }
+            console.log("the message of outgoingpayload " + JSON.stringify(outgoingPayload));
+            console.log("The deatils {} ", payload.roomId, payload.userId, outgoingPayload);
             userManager.broadcast(payload.roomId, payload.userId, outgoingPayload);
         }
 
