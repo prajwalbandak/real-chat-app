@@ -16,6 +16,16 @@
                 }))
             }
 
+            ws.onmessage = function(event){
+                const payload = JSON.parse(event.data);
+                console.log("payloard " + payload);
+                try{
+                    alert(JSON.stringify(event));
+                }catch(e){
+                    console.log("ERROR " + e);
+                }
+            }
+
             function sendChat(){
                 ws.send(JSON.stringify({
                     type:"SEND_MESSAGE",
