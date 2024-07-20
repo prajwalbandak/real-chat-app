@@ -10,7 +10,7 @@ Before starting, make sure you have the following installed on your machine:
 - [Git](https://git-scm.com/downloads)
 
 ### Getting Started
-### First start with Backend part
+###  Backend part
 1. **Clone the Repository**
 
    ```bash
@@ -73,7 +73,7 @@ First, clone the GitHub repository to your local machine:
 
 ```bash
 git clone <repository_url>
-cd <repository_directory>
+cd taskmanagerfrontend
 npm install
 
 ##Once the dependencies are installed, start the development server:
